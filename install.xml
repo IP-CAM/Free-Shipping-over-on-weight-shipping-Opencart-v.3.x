@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>Free shipping by total price on Weight Based shipping</name>
+	<version>3.x.x</version>
+	<code>#fsfsw</code>
+	<author>ForgedSoft(forgedsoft.com)</author>
+	<link>http://opencartextensions.in/</link>
+
+	<file path="catalog/model/extension/shipping/weight.php">
+		<operation error="skip">
+			<search><![CDATA[if ((string)$cost != '') {]]></search>
+			<add position="before"><![CDATA[
+			if ($this->cart->getSubTotal() >= $this->config->get('shipping_free_total')) {
+				$cost = 0;
+			}
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/extension/shipping/weight.php">
+		<operation error="skip">
+			<search><![CDATA[$this->model_setting_setting->editSetting('shipping_weight', $this->request->post);]]></search>
+			<add position="after"><![CDATA[
+				$this->model_setting_setting->editSettingValue('shipping_free','shipping_free_total', $this->request->post['shipping_free_total']);
+				]]></add>
+		</operation>
+		
+		<operation error="skip">
+			<search><![CDATA[$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=shipping', true);]]></search>
+			<add position="after"><![CDATA[
+				if (isset($this->request->post['shipping_free_total'])) {
+					$data['shipping_free_total'] = $this->request->post['shipping_free_total'];
+				} else {
+					$data['shipping_free_total'] = $this->config->get('shipping_free_total');
+				}
+				]]></add>
+		</operation>	
+	</file>
+
+    <file path="admin/view/template/extension/shipping/weight.twig">
+		<operation error="skip">
+			<search><![CDATA[<div class="tab-pane active" id="tab-general">]]></search>
+			<add position="after"><![CDATA[
+			<div class="form-group">
+				<label class="col-sm-2 control-label" for="input-total"><span data-toggle="tooltip" title="{{ help_total }}">{{ entry_total }}</span></label>
+				<div class="col-sm-10">
+				<input type="text" name="shipping_free_total" value="{{ shipping_free_total }}" placeholder="{{ entry_total }}" id="input-total" class="form-control" />
+				</div>
+			</div>
+		]]></add>
+		</operation>
+	</file>
+
+    <file path="admin/language/*/extension/shipping/weight.php">
+		<operation error="skip">
+			<search><![CDATA[// Entry]]></search>
+			<add position="before"><![CDATA[
+				$_['entry_total']      = 'Δωρεάν μεταφορικά πάνω από. Free shipping over.';
+              ]]></add>
+		</operation>
+	</file>
+	
+</modification>
